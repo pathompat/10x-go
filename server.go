@@ -39,7 +39,7 @@ func main() {
 		applicationRoute.GET("/", f.getAllApplication)
 	}
 
-	router.Run(":8080")
+	router.Run(":5000")
 
 }
 
