@@ -5,6 +5,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 
 	// "firebase/models"
 
@@ -17,30 +18,37 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type App struct {
+type Firestore struct {
 	client *firestore.Client
 	ctx    context.Context
 }
 
 func main() {
-	route := App{}
-	route.Init()
+	password := os.Getenv("BASIC_AUTH_PASSWORD")
+
+	f := Firestore{}
+	f.Init()
 
 	router := gin.Default()
+	router.Use(gin.BasicAuth(gin.Accounts{
+		"admin": password,
+	}))
 
-	// Get all applications coming in
-	router.GET("/applications", func(c *gin.Context) {
-		route.Application(c)
-	})
+	applicationRoute := router.Group("/applications")
+	{
+		applicationRoute.GET("/", f.getAllApplication)
+	}
 
-	router.Run()
+	router.Run(":8080")
 
 }
 
-func (route *App) Init() {
+// Connect firestore database using credential
+func (route *Firestore) Init() {
 	route.ctx = context.Background()
-	sa := option.WithCredentialsFile("x-group-290609-firebase-adminsdk-wq05l-e29aa1fc60.json")
+	sa := option.WithCredentialsFile("serviceAccount.json")
 	app, err := firebase.NewApp(route.ctx, nil, sa)
+
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -49,10 +57,10 @@ func (route *App) Init() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 }
 
-func (route *App) Application(c *gin.Context) {
+// Return all applications in database as json format
+func (route *Firestore) getAllApplication(c *gin.Context) {
 	iter := route.client.Collection("applications").Documents(route.ctx)
 	ApplicationsData := []models.Application{}
 	for {
