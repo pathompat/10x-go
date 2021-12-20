@@ -8,6 +8,9 @@ COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
+RUN touch serviceAccount.json
+RUN --mount=type=secret,id=auto-devops-build-secrets . /run/secrets/auto-devops-build-secrets && echo $FIRESTORE_SERVICE_ACCOUNT >> serviceAccount.json
+
 COPY *.go ./
 COPY ./models ./models
 

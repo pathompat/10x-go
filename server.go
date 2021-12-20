@@ -77,7 +77,3 @@ func (route *Firestore) getAllApplication(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, ApplicationsData)
 }
-
-func testFunc(num int) int {
-	return 1
-}
