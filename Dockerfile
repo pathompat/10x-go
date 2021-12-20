@@ -16,6 +16,6 @@ COPY ./models ./models
 
 RUN go build -o /docker-10x-go
 
-EXPOSE 8080
+EXPOSE 5000
 
 CMD [ "/docker-10x-go" ]
