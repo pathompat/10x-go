@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax = docker/dockerfile:experimental
 
 FROM golang:1.16-alpine
 
