@@ -2,6 +2,9 @@
 
 FROM golang:1.16-alpine
 
+ENV GOPROXY https://goproxy.io
+ENV GIN_MODE release
+
 WORKDIR /app
 
 COPY go.mod ./
