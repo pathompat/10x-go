@@ -24,23 +24,28 @@ type Firestore struct {
 }
 
 func main() {
-	password := os.Getenv("BASIC_AUTH_PASSWORD")
 
+	// Initial firestore database
 	f := Firestore{}
 	f.Init()
 
-	router := gin.Default()
+	// Initial gingonic
+	router := gin.New()
 	router.Use(gin.BasicAuth(gin.Accounts{
-		"admin": password,
+		"admin": os.Getenv("BASIC_AUTH_PASSWORD"),
 	}))
 
+	// Route path in application
 	applicationRoute := router.Group("/applications")
 	{
 		applicationRoute.GET("/", f.getAllApplication)
+		applicationRoute.POST("/", f.createApplication)
+		applicationRoute.PUT("/:id", f.updateApplicaiton)
+		applicationRoute.DELETE("/:id", f.deleteApplication)
 	}
 
+	// Start server (production use port 5000)
 	router.Run(":5000")
-
 }
 
 // Connect firestore database using credential
@@ -76,4 +81,38 @@ func (route *Firestore) getAllApplication(c *gin.Context) {
 		ApplicationsData = append(ApplicationsData, ApplicationData)
 	}
 	c.JSON(http.StatusOK, ApplicationsData)
+}
+
+// Add new application to db
+func (route *Firestore) createApplication(c *gin.Context) {
+	var application models.Application
+	c.BindJSON(&application)
+
+	_, _, err := route.client.Collection("applications").Add(route.ctx, application)
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
+	}
+}
+
+// update existing application or create new if not existed
+func (route *Firestore) updateApplicaiton(c *gin.Context) {
+	id := c.Param("id")
+	var application models.Application
+	c.BindJSON(&application)
+	_, err := route.client.Collection("applications").Doc(id).Set(route.ctx, application)
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
+	}
+}
+
+// Delele application from id given
+func (route *Firestore) deleteApplication(c *gin.Context) {
+	id := c.Param("id")
+	_, err := route.client.Collection("applications").Doc(id).Delete(route.ctx)
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
+	}
 }
