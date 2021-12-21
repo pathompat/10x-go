@@ -35,6 +35,9 @@ func main() {
 		"admin": os.Getenv("BASIC_AUTH_PASSWORD"),
 	}))
 
+	// Index page
+	router.GET("/", f.heartbeat)
+
 	// Route path in application
 	applicationRoute := router.Group("/applications")
 	{
@@ -64,6 +67,11 @@ func (route *Firestore) Init() {
 	}
 }
 
+// Homepage
+func (route *Firestore) heartbeat(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Hello, 10x GO"})
+}
+
 // Return all applications in database as json format
 func (route *Firestore) getAllApplication(c *gin.Context) {
 	iter := route.client.Collection("applications").Documents(route.ctx)
@@ -88,11 +96,12 @@ func (route *Firestore) createApplication(c *gin.Context) {
 	var application models.Application
 	c.BindJSON(&application)
 
-	_, _, err := route.client.Collection("applications").Add(route.ctx, application)
+	ref, _, err := route.client.Collection("applications").Add(route.ctx, application)
 	if err != nil {
 		// Handle any errors in an appropriate way, such as returning them.
 		log.Printf("An error has occurred: %s", err)
 	}
+	c.JSON(http.StatusCreated, gin.H{"message": "Success", "id": ref.ID})
 }
 
 // update existing application or create new if not existed
@@ -105,6 +114,7 @@ func (route *Firestore) updateApplicaiton(c *gin.Context) {
 		// Handle any errors in an appropriate way, such as returning them.
 		log.Printf("An error has occurred: %s", err)
 	}
+	c.JSON(http.StatusOK, gin.H{"message": "Success"})
 }
 
 // Delele application from id given
@@ -115,4 +125,5 @@ func (route *Firestore) deleteApplication(c *gin.Context) {
 		// Handle any errors in an appropriate way, such as returning them.
 		log.Printf("An error has occurred: %s", err)
 	}
+	c.JSON(http.StatusNoContent, gin.H{"message": "Success"})
 }
