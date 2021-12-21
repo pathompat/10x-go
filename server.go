@@ -31,12 +31,14 @@ func main() {
 
 	// Initial gingonic
 	router := gin.New()
-	router.Use(gin.BasicAuth(gin.Accounts{
-		"admin": os.Getenv("BASIC_AUTH_PASSWORD"),
-	}))
 
 	// Index page
 	router.GET("/", f.heartbeat)
+
+	// Set username password for access resource
+	router.Use(gin.BasicAuth(gin.Accounts{
+		"admin": os.Getenv("BASIC_AUTH_PASSWORD"),
+	}))
 
 	// Route path in application
 	applicationRoute := router.Group("/applications")
